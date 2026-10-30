@@ -10,13 +10,13 @@ require('./database/db');
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/health', (req, res) => {
+/* app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         projeto: 'DevJobs API',
         timestamp: new Date().toISOString()
     });
-});
+}); */
 
 app.use('/api/vagas', vagasRoutes);
 
