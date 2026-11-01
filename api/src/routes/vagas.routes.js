@@ -2,6 +2,7 @@ const { Router } = require('express');
 const router = Router();
 const { vagas } = require("../../../js/dados.js");
 const db = require('../database/db');
+const auth = require('../middleware/auth.middleware');
 
 const vagasMock = vagas;
 
@@ -16,17 +17,17 @@ router.get('/', (req, res) => {
   res.json(vagas);
 });
 
-router.post('/', (req, res) => {
-  const { titulo, empresa_id, tipo, tecnologias, salario, cep, cidade, estado, descricao } = req.body;
+router.post('/', auth, (req, res) => {
+  const { titulo, tipo, tecnologias, salario, cep, cidade, estado, descricao } = req.body;
 
-  if (!titulo || !empresa_id || !tipo) {
-    return res.status(400).json({ erro: 'Campos Obrigatórios: titulo, Empresa_id, tipo' })
+  if (!titulo || !tipo) {
+    return res.status(400).json({ erro: 'Campos Obrigatórios: titulo, tipo' })
   }
 
   const result = db.prepare(
     `INSERT INTO vagas (titulo, empresa_id, tipo, tecnologias, salario, cep, cidade, estado, descricao)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(titulo, empresa_id, tipo, tecnologias || '', salario || '', cep || '', cidade || '', estado || '', descricao || '');
+        `).run(titulo, req.empresa.id, tipo, tecnologias || '', salario || '', cep || '', cidade || '', estado || '', descricao || '');
 
   const vaga = db.prepare('SELECT * FROM vagas WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(vaga);
@@ -76,7 +77,7 @@ router.put('/:id', (req, res) => {
   res.json(atualizada);
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', auth, (req, res) => {
   const { id } = req.params;
   result = db.prepare('DELETE FROM vagas WHERE id = ?').run(id);
 
